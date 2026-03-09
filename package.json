@@ -1,29 +1,17 @@
 {
-  "name": "@modelcontextprotocol/servers",
+  "name": "mcp-servers-automation",
   "private": true,
-  "version": "0.6.2",
-  "description": "Model Context Protocol servers",
-  "license": "SEE LICENSE IN LICENSE",
-  "author": "Model Context Protocol a Series of LF Projects, LLC.",
-  "homepage": "https://modelcontextprotocol.io",
-  "bugs": "https://github.com/modelcontextprotocol/servers/issues",
+  "version": "1.0.0",
+  "description": "Custom MCP servers for test automation with Playwright",
+  "license": "MIT",
+  "author": "Your Name",
   "type": "module",
   "workspaces": [
     "src/*"
   ],
-  "files": [],
   "scripts": {
     "build": "npm run build --workspaces",
     "watch": "npm run watch --workspaces",
-    "setup": "tsx setup.ts",
-    "setup-build": "tsc setup.ts && node setup.js",
-    "publish-all": "npm publish --workspaces --access public",
-    "link-all": "npm link --workspaces"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/server-everything": "*",
-    "@modelcontextprotocol/server-memory": "*",
-    "@modelcontextprotocol/server-filesystem": "*",
-    "@modelcontextprotocol/server-sequential-thinking": "*"
+    "setup": "pwsh setup.ps1"
   }
 }
