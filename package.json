@@ -15,6 +15,8 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "watch": "npm run watch --workspaces",
+    "setup": "tsx setup.ts",
+    "setup-build": "tsc setup.ts && node setup.js",
     "publish-all": "npm publish --workspaces --access public",
     "link-all": "npm link --workspaces"
   },

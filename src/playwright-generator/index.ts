@@ -2,7 +2,7 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, TextContent } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, TextContent } from "@modelcontextprotocol/sdk/types.js";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -56,7 +56,7 @@ from pages.home_page import HomePage
 from pages.login_page import LoginPage
 
 
-def test_${testDescription.lower().replace(/[^a-z0-9]/g, "_")}(page):
+def test_${testDescription.toLowerCase().replace(/[^a-z0-9]/g, "_")}(page):
     """${testDescription}
     
     Generated from natural language prompt.
@@ -169,7 +169,7 @@ class ${pageName}Page(BasePage):
         content: [
           {
             type: "text" as const,
-            text: `Generated Page Object (Python):\n\n\`\`\`python\n${code}\n\`\`\`\n\n**Next Steps:**\n1. Add locator definitions\n2. Implement page methods\n3. Add docstrings\n4. Save to: pages/${pageName.lower()}_page.py`,
+            text: `Generated Page Object (Python):\n\n\`\`\`python\n${code}\n\`\`\`\n\n**Next Steps:**\n1. Add locator definitions\n2. Implement page methods\n3. Add docstrings\n4. Save to: pages/${pageName.toLowerCase()}_page.py`,
           },
         ],
       };
@@ -187,7 +187,7 @@ class ${pageName}Page(BasePage):
 });
 
 // Define available tools
-server.setRequestHandler("tools/list", async () => {
+server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
