@@ -265,6 +265,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
+  console.error("[playwright-generator] MCP server started successfully");
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error("[playwright-generator] Server error:", error);
+  process.exit(1);
+});
