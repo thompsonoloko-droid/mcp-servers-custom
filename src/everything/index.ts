@@ -1,9 +1,33 @@
 #!/usr/bin/env node
 
-// Parse command line arguments first
+/**
+ * @fileoverview MCP Server with multiple transport options.
+ * Dynamically loads and runs specified transport layer (stdio, SSE, or streamable HTTP)
+ * allowing flexible deployment scenarios.
+ * @author Automation Framework Team
+ * @version 1.0.0
+ */
+
+/**
+ * Parse command line arguments for transport selection.
+ * Supports: stdio (default), sse, streamableHttp
+ */
 const args = process.argv.slice(2);
 const scriptName = args[0] || "stdio";
 
+/**
+ * Main entry point for the server launcher.
+ * Dynamically imports and initializes the specified transport.
+ * This approach prevents unnecessary module loading for unused transports.
+ *
+ * Supported Transports:
+ * - stdio: Standard input/output communication (default, MCP compliant)
+ * - sse: Server-Sent Events for HTTP streaming
+ * - streamableHttp: HTTP with streaming capabilities
+ *
+ * @async
+ * @throws {Error} If unknown transport is specified or transport initialization fails
+ */
 async function run() {
   try {
     // Dynamically import only the requested module to prevent all modules from initializing

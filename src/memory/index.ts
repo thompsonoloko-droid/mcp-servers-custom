@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+/**
+ * @fileoverview MCP Server for persistent graph-based memory management.
+ * Implements a flexible memory system storing entities, relations, and observations
+ * in JSONL format for knowledge persistence across sessions.
+ * @author Automation Framework Team
+ * @version 1.0.0
+ */
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -7,10 +15,25 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Define memory file path using environment variable with fallback
+/**
+ * Default path for memory storage in JSONL format.
+ * Located in the server directory unless MEMORY_FILE_PATH env var is set.
+ */
 export const defaultMemoryPath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'memory.jsonl');
 
-// Handle backward compatibility: migrate memory.json to memory.jsonl if needed
+/**
+ * Ensures memory file path is correctly set up.
+ * Handles backward compatibility migration from memory.json to memory.jsonl.
+ *
+ * @async
+ * @returns {Promise<string>} Absolute path to memory file
+ * @throws {Error} If both file access and creation fail
+ *
+ * Migration Logic:
+ * 1. Check MEMORY_FILE_PATH env var - use if set
+ * 2. Detect legacy memory.json and migrate to memory.jsonl
+ * 3. Use default path if no legacy file exists
+ */
 export async function ensureMemoryFilePath(): Promise<string> {
   if (process.env.MEMORY_FILE_PATH) {
     // Custom path provided, use it as-is (with absolute path resolution)
@@ -43,10 +66,16 @@ export async function ensureMemoryFilePath(): Promise<string> {
   }
 }
 
-// Initialize memory file path (will be set during startup)
+/**
+ * Initialize memory file path (set during server startup).
+ * @type {string}
+ */
 let MEMORY_FILE_PATH: string;
 
-// We are storing our memory using entities, relations, and observations in a graph structure
+/**
+ * Graph-based memory structure storing knowledge as entities, relations, and observations.
+ * Provides semantic knowledge representation with connections and observations.
+ */
 export interface Entity {
   name: string;
   entityType: string;

@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+/**
+ * @fileoverview MCP Server for secure filesystem operations.
+ * Provides tools for reading, writing, searching, and managing files with configurable
+ * directory access restrictions and symlink safety.
+ * @author Automation Framework Team
+ * @version 1.0.0
+ */
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -28,6 +36,15 @@ import {
   setAllowedDirectories,
 } from './lib.js';
 
+/**
+ * MCP Server instance with tools capability.
+ * Provides filesystem operations to authorized clients.
+ */
+const server = new McpServer(
+  { name: "filesystem", version: "1.0.0" },
+  { capabilities: { tools: {} } }
+);
+
 // Command line argument parsing
 const args = process.argv.slice(2);
 if (args.length === 0) {
@@ -38,10 +55,16 @@ if (args.length === 0) {
   console.error("At least one directory must be provided by EITHER method for the server to operate.");
 }
 
-// Store allowed directories in normalized and resolved form
-// We store BOTH the original path AND the resolved path to handle symlinks correctly
-// This fixes the macOS /tmp -> /private/tmp symlink issue where users specify /tmp
-// but the resolved path is /private/tmp
+/**
+ * Initialize allowed directories from command-line arguments.
+ * Resolves symlinks and normalizes paths for secure path validation.
+ *
+ * Security Considerations:
+ * - Resolves symlinks to prevent directory escape attempts
+ * - Stores both original and resolved paths for macOS compatibility
+ * - Handles /tmp -> /private/tmp symlink on macOS
+ * - Normalizes all paths for consistent validation
+ */
 let allowedDirectories = (await Promise.all(
   args.map(async (dir) => {
     const expanded = expandHome(dir);

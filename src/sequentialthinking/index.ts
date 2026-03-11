@@ -1,22 +1,40 @@
 #!/usr/bin/env node
 
+/**
+ * @fileoverview MCP Server for sequential and reflective problem-solving.
+ * Implements chain-of-thought reasoning patterns allowing dynamic and adaptive
+ * problem decomposition with revision capabilities.
+ * @author Automation Framework Team
+ * @version 1.0.0
+ */
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { SequentialThinkingServer } from './lib.js';
 
-const server = new McpServer({
-  name: "sequential-thinking-server",
-  version: "0.2.0",
-});
+/**
+ * MCP Server instance with tools capability.
+ * Provides sequential thinking tool for complex problem-solving.
+ */
+const server = new McpServer(
+  {
+    name: "sequential-thinking-server",
+    version: "0.2.0",
+  },
+  { capabilities: { tools: {} } }
+);
 
+/**
+ * Sequential thinking engine instance.
+ * Manages chain-of-thought reasoning with revision and adaptation support.
+ */
 const thinkingServer = new SequentialThinkingServer();
 
-server.registerTool(
-  "sequentialthinking",
-  {
-    title: "Sequential Thinking",
-    description: `A detailed tool for dynamic and reflective problem-solving through thoughts.
+/**
+ * Register the main sequential thinking tool.
+ * Enables flexible problem-solving with dynamic analysis and revisions.
+ */
 This tool helps analyze problems through a flexible thinking process that can adapt and evolve.
 Each thought can build on, question, or revise previous insights as understanding deepens.
 

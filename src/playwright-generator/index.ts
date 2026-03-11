@@ -1,21 +1,64 @@
 #!/usr/bin/env node
 
+/**
+ * @fileoverview MCP Server for generating Playwright tests from natural language descriptions.
+ * 
+ * This server provides tools for:
+ * - Generating TypeScript Playwright tests from natural language
+ * - Generating Python Playwright tests from natural language
+ * - Creating Page Object Model (POM) classes
+ * - Analyzing page structure and extracting selectors
+ * 
+ * @author Automation Framework Team
+ * @version 1.0.0
+ */
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema, TextContent } from "@modelcontextprotocol/sdk/types.js";
 import * as fs from "fs";
 import * as path from "path";
 
-const server = new Server({
-  name: "playwright-generator",
-  version: "1.0.0",
-});
+/**
+ * Initialize the MCP server with tool capabilities.
+ * Declares support for tools before setting up request handlers.
+ */
+const server = new Server(
+  {
+    name: "playwright-generator",
+    version: "1.0.0",
+  },
+  {
+    capabilities: {
+      tools: {}, // Declare tools capability to enable tool call handling
+    },
+  }
+);
 
-// Tool: Generate TypeScript Playwright test from natural language
+/**
+ * Handle tool call requests from Claude.
+ * Routes to appropriate tool handler based on tool name.
+ * 
+ * Supported tools:
+ * - generate_ts_test: Generate TypeScript Playwright test
+ * - generate_python_test: Generate Python Playwright test
+ * - create_page_object: Generate Page Object Model class
+ * - analyze_page_structure: Analyze page and extract selectors
+ */
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const toolName = request.params.name;
   const args = request.params.arguments as Record<string, string>;
 
+  /**
+   * Tool: generate_ts_test
+   * Generates a TypeScript Playwright test template from natural language.
+   * 
+   * Parameters:
+   * - description: Natural language description of what the test should do
+   * - project_path: Optional path to the Playwright project
+   * 
+   * Returns: Test code template ready for customization
+   */
   if (toolName === "generate_ts_test") {
     const testDescription = args.description;
     const projectPath = args.project_path || "D:\\Automation\\automation_playwright_ts";
@@ -48,6 +91,15 @@ test("${testDescription.replace(/"/g, '\\"')}", async ({ page }) => {
     };
   }
 
+  /**
+   * Tool: generate_python_test
+   * Generates a Python Playwright test template from natural language.
+   * 
+   * Parameters:
+   * - description: Natural language description of what the test should do
+   * 
+   * Returns: Python test code template ready for customization
+   */
   if (toolName === "generate_python_test") {
     const testDescription = args.description;
     
@@ -186,7 +238,20 @@ class ${pageName}Page(BasePage):
   };
 });
 
-// Define available tools
+/**
+ * Handles ListToolsRequest to return all available tools.
+ * This handler defines the schema and descriptions for all tools supported by the server.
+ * Clients use this to discover available capabilities and construct tool invocations.
+ *
+ * @async
+ * @returns {Promise<Object>} Object containing array of tool definitions with schemas
+ * @example
+ * // Returns all 4 tools with their input schemas:
+ * // - generate_ts_test: TypeScript test generation
+ * // - generate_python_test: Python test generation
+ * // - analyze_page_structure: Page object analysis
+ * // - create_page_object: Page object template generation
+ */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
@@ -223,6 +288,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
       {
+        /**
+         * Tool: analyze_page_structure
+         * Analyzes an existing page object file to extract locators and methods.
+         * Useful for understanding page object organization and identifying patterns.
+         *
+         * @param {string} page_file - Path to page object file (relative to project root)
+         * @param {string} project_path - Root path to Playwright project
+         * @returns {Object} Analysis results with extracted locators and methods
+         * @example
+         * // Analyzes pages/login_page.py or pages/login-page.ts
+         * // Returns: list of locators (selectors), methods, and class structure
+         */
         name: "analyze_page_structure",
         description: "Analyze a page object file to extract locators and methods",
         inputSchema: {
@@ -241,6 +318,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
       {
+        /**
+         * Tool: create_page_object
+         * Generates a new page object template for either TypeScript or Python.
+         * Provides boilerplate structure following Page Object Model best practices.
+         *
+         * @param {string} page_name - Name of the page (e.g., 'Login', 'Dashboard', 'Checkout')
+         * @param {string} language - Target language: 'typescript' or 'python'
+         * @returns {Object} Generated page object template code
+         * @example
+         * // Language: 'typescript' returns ts class with PlaywrightLocators
+         * // Language: 'python' returns Python class inheriting from BasePage
+         * // Include comments on how to add locators and implement methods
+         */
         name: "create_page_object",
         description: "Generate a new page object template",
         inputSchema: {
@@ -262,12 +352,36 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   };
 });
 
+/**
+ * Main entry point for the MCP server.
+ * Initializes the server transport and establishes connection with the MCP host.
+ * The server remains running, listening for tool call requests over stdio.
+ *
+ * Execution Flow:
+ * 1. Creates StdioServerTransport for stdio-based communication
+ * 2. Connects the server to the transport
+ * 3. Logs success confirmation
+ * 4. Server enters listening state until process termination
+ *
+ * @async
+ * @returns {Promise<void>} Resolves when server connects successfully
+ * @throws {Error} If server fails to connect (caught by .catch() below)
+ *
+ * @example
+ * // Called automatically on script execution
+ * // Process will exit with code 1 if connection fails
+ */
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("[playwright-generator] MCP server started successfully");
 }
 
+/**
+ * Execute main() and handle startup errors.
+ * If the main function fails, logs the error and exits with error code.
+ * This is critical for CI/CD systems to detect startup failures.
+ */
 main().catch((error) => {
   console.error("[playwright-generator] Server error:", error);
   process.exit(1);
